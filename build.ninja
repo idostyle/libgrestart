@@ -1,0 +1,16 @@
+cflags = -O3 -march=native -pipe -fPIC -fstack-protector-all -Wall -Wextra -Wformat=2 -Winit-self -Wstack-protector -Wdisabled-optimization -Wvector-operation-performance -Winline -Wnested-externs -Wpacked -Wpadded -Wredundant-decls -Wmissing-format-attribute -Wlogical-op -Waggregate-return -Wtraditional-conversion -Wshadow -Wunsafe-loop-optimizations -Wbad-function-cast -Wcast-qual -Wcast-align -Wconversion -Wtrampolines -Wsuggest-attribute=pure -Wsuggest-attribute=const -Wsuggest-attribute=noreturn -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wdouble-promotion
+libs =
+
+rule cc
+  command = gcc $cflags $in -o $out $libs
+  description = compiling $in
+
+rule musl
+  command = musl-gcc $cflags $in -o $out $libs
+
+build libgrestart.so: musl grestart.c | grestart.h
+  cflags = $cflags --shared -ggdb3
+
+build gr_test: musl gr_test.c | grestart.h libgrestart.so
+  cflags = $cflags -pie -ggdb3
+  libs = -L./ -Xlinker -rpath -Xlinker ./ -lgrestart
