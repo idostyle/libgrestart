@@ -166,17 +166,17 @@ int gr_send(int gr, int fd, void * fd_identifier, const size_t fd_identifier_len
 
 
 #ifndef GR_WANT_POLL
-int gr_poll(int fd);
+int gr_poll(int fd, int timeout);
 #endif
 
-int gr_poll(int fd)
+int gr_poll(int fd, int timeout)
 {
     if (fd >= 0)
     {
         struct pollfd pfd;
         pfd.fd = fd;
         pfd.events = POLLIN | POLLMSG;
-        const int r = poll(&pfd, 1lu, 0);
+        const int r = poll(&pfd, 1lu, timeout);
         if (r < 0)
             return GR_POLL_FAILED;
         else
