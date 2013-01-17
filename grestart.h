@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-typedef enum codes_
+typedef enum error_codes_
 {
     GR_NO_IDENTIFIER = -1,
     GR_IDENTIFIER_TOO_LONG = -2,
@@ -22,33 +22,62 @@ typedef enum codes_
     GR_INVALID_MSG_RECVD = -11,
     GR_DOESNT_LOOK_LIKE_A_FD = -12,
     GR_POLL_FAILED = -13,
-} codes_t;
+} error_codes_t;
 
 /**
- * Connect to an running instance
+ * Connect to an running instance if there is one.
+ *
+ * - identifier:
+ *   - a writable path string (ex. "/tmp/example.sock")
+ *   - an abstract uds string (ex. "\0e11ab38fa")
+ *
+ * - identifier_len: length of identifier (ex. "/tmp/example.sock" => 17)
+ *
+ * Returns a fd >= 0 or an error code < 0
+ *   -
  */
 int gr_init(const char * identifier, const size_t identifier_len);
 
 /**
- * Setup a waiting instance
+ * Setup a waiting instance.
+ *
+ * - identifier:
+ *   - a writable path string (ex. "/tmp/example.sock")
+ *   - an abstract uds string (ex. "\0e11ab38fa")
+ *
+ * - identifier_len: length of identifier (ex. "/tmp/example.sock" => 17)
+ *
+ * Returns a fd >= 0 or an error code < 0
  */
 int gr_setup(const char * identifier, const size_t identifier_len);
 
 /**
- * Recieve an fd from a running instance
- */
-int gr_recv(int gr, void * fd_identifier, const size_t fd_identifier_len);
-
-/**
- * Send an fd to the new instance
- */
-int gr_send(int gr, int fd, void * fd_identifier, const size_t fd_identifier_len);
-
-/**
+ * Recieve an fd from a running instance.
  *
+ * - gr: is expected to be an accepted client socket
+ *
+ * - fd_identifier: is expected to be allocated memory area or 0
+ *
+ * - fd_identifier_len:
+ *
+ * Returns an fd >= 0 or an error code < 0
+ */
+int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len);
+
+/**
+ * Send an fd to the new instance.
+ *
+ * Returns count of byte sent >= 0 or an error code < 0
+ */
+int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_identifier_len);
+
+/**
+ * Poll if the fd is readable or message is to be recieved.
+ *
+ * Returns poll events > 0 or an error code < 0
  */
 #ifdef GR_WANT_POLL
-int gr_poll(int fd, int timeout);
+int gr_poll(const int fd, const int timeout);
 #endif
 
 

@@ -12,7 +12,7 @@
 #define GR_ARG_CHECK() \
     if (!identifier) \
         return GR_NO_IDENTIFIER; \
-    if (identifier_len > /* linux/un.h: UNIX_PATH_MAX */ 108) \
+    if (identifier_len > /* linux/un.h: UNIX_PATH_MAX - 1*/ 107) \
         return GR_IDENTIFIER_TOO_LONG;
 
 #define GR_CREATE_SOCKET(var_s) \
@@ -73,7 +73,7 @@ int gr_setup(const char * identifier, const size_t identifier_len)
     return s;
 }
 
-int gr_recv(int gr, void * fd_identifier, size_t fd_identifier_len)
+int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len)
 {
     if (gr < 0)
         return GR_NOT_A_GR_INSTANCE;
@@ -122,7 +122,7 @@ int gr_recv(int gr, void * fd_identifier, size_t fd_identifier_len)
     return fd;
 }
 
-int gr_send(int gr, int fd, void * fd_identifier, const size_t fd_identifier_len)
+int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_identifier_len)
 {
     if (gr < 0)
         return GR_NOT_A_GR_INSTANCE;
@@ -167,10 +167,10 @@ int gr_send(int gr, int fd, void * fd_identifier, const size_t fd_identifier_len
 
 
 #ifndef GR_WANT_POLL
-int gr_poll(int fd, int timeout);
+int gr_poll(const int fd, const int timeout);
 #endif
 
-int gr_poll(int fd, int timeout)
+int gr_poll(const int fd, const int timeout)
 {
     if (fd >= 0)
     {
