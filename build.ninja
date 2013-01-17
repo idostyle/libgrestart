@@ -7,6 +7,7 @@ rule cc
 
 rule musl
   command = musl-gcc $cflags $in -o $out $libs
+  description = compiling $in
 
 build libgrestart.so: musl grestart.c | grestart.h
   cflags = $cflags --shared -ggdb3

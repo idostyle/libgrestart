@@ -19,8 +19,9 @@ typedef enum codes_
     GR_NOT_A_GR_INSTANCE = -8,
     GR_RECVMSG_FAILED = -9,
     GR_SENDMSG_FAILED = -10,
-    GR_INVALID_MSG = -11,
-    GR_POLL_FAILED = -12,
+    GR_INVALID_MSG_RECVD = -11,
+    GR_DOESNT_LOOK_LIKE_A_FD = -12,
+    GR_POLL_FAILED = -13,
 } codes_t;
 
 /**

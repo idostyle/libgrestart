@@ -88,7 +88,7 @@ int main(int argc, char ** argv)
         printf("gr_setup errno: %s\n", strerror(errno));
     }
 
-    sleep(5);
+    sleep(1);
 
     return 0;
 }

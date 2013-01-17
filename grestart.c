@@ -20,7 +20,13 @@
     if (var_s < 0) \
         return GR_SOCKET_CREATION_FAILED;
 
-#define GR_CLOSE_AND_RETURN(s, err) { close(s); return err; }
+#define GR_SETUP_ADDRESS(address, identifier, identifier_len) do { \
+        memset(&address, 0, sizeof(struct sockaddr_un)); \
+        address.sun_family = AF_UNIX; \
+        memcpy(&(address.sun_path), identifier, identifier_len); \
+    } while(0)
+
+#define GR_CLOSE_AND_RETURN(var_s, err) { close(var_s); return err; }
 
 #define GR_SUN_LEN(idlen) ((socklen_t) (((size_t)((struct sockaddr_un *) 0)->sun_path) + idlen))
 
@@ -32,11 +38,9 @@ int gr_init(const char * identifier, const size_t identifier_len)
     GR_CREATE_SOCKET(s);
 
     struct sockaddr_un address;
-    memset(&address, 0, sizeof(struct sockaddr_un));
-    address.sun_family = AF_UNIX;
-    memcpy(&(address.sun_path), identifier, identifier_len);
+    GR_SETUP_ADDRESS(address, identifier, identifier_len);
 
-    int r = connect(s, (struct sockaddr *) &address, GR_SUN_LEN(identifier_len));
+    const int r = connect(s, (struct sockaddr *) &address, GR_SUN_LEN(identifier_len));
     if (r < 0)
         GR_CLOSE_AND_RETURN(s, GR_CONNECT_FAILED);
 
@@ -50,21 +54,19 @@ int gr_setup(const char * identifier, const size_t identifier_len)
     GR_CREATE_SOCKET(s);
 
     const int reuse = 1;
-    int so = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &reuse, (socklen_t) sizeof(int));
+    const int so = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &reuse, (socklen_t) sizeof(int));
     if (so < 0)
         GR_CLOSE_AND_RETURN(s, GR_SETSOCKOPT_FAILED);
 
     struct sockaddr_un address;
-    memset(&address, 0, sizeof(struct sockaddr_un));
-    address.sun_family = AF_UNIX;
-    memcpy(&(address.sun_path), identifier, identifier_len);
+    GR_SETUP_ADDRESS(address, identifier, identifier_len);
 
-    int r = bind(s, (struct sockaddr *) &address, GR_SUN_LEN(identifier_len));
+    const int r = bind(s, (struct sockaddr *) &address, GR_SUN_LEN(identifier_len));
     if (r < 0)
         GR_CLOSE_AND_RETURN(s, GR_BIND_FAILED);
 
-    r = listen(s, 1);
-    if (r < 0)
+    const int l = listen(s, 1);
+    if (l < 0)
         GR_CLOSE_AND_RETURN(s, GR_LISTEN_FAILED);
 
     return s;
@@ -97,25 +99,24 @@ int gr_recv(int gr, void * fd_identifier, size_t fd_identifier_len)
         m.msg_iovlen = 1;
     }
 
-    ssize_t r = recvmsg(gr, &m, 0);
+    const ssize_t r = recvmsg(gr, &m, 0);
     if (r < 0)
         return GR_RECVMSG_FAILED;
 
     if (m.msg_flags & MSG_CTRUNC)
-        return GR_INVALID_MSG;
+        return GR_INVALID_MSG_RECVD;
 
     if (m.msg_controllen != CMSG_SPACE(sizeof(int)))
-        return GR_INVALID_MSG;
+        return GR_INVALID_MSG_RECVD;
 
     struct cmsghdr * cr = CMSG_FIRSTHDR(&m);
 
     if (cr->cmsg_level != SOL_SOCKET || cr->cmsg_type != SCM_RIGHTS)
-        return GR_INVALID_MSG;
+        return GR_INVALID_MSG_RECVD;
 
-    int fd = -1;
-    fd = *CMSG_DATA(cr);
+    const int fd = *CMSG_DATA(cr);
     if (fd < 0)
-        return GR_RECVMSG_FAILED;
+        return GR_DOESNT_LOOK_LIKE_A_FD;
 
     return fd;
 }
@@ -124,6 +125,9 @@ int gr_send(int gr, int fd, void * fd_identifier, const size_t fd_identifier_len
 {
     if (gr < 0)
         return GR_NOT_A_GR_INSTANCE;
+
+    if (fd < 0)
+        return GR_DOESNT_LOOK_LIKE_A_FD;
 
     struct msghdr m;
     memset(&m, 0, sizeof(struct msghdr));
@@ -153,7 +157,7 @@ int gr_send(int gr, int fd, void * fd_identifier, const size_t fd_identifier_len
     m.msg_iov = iov;
     m.msg_iovlen = 1;
 
-    ssize_t r = sendmsg(gr, &m, 0);
+    const ssize_t r = sendmsg(gr, &m, 0);
     if (r < 0)
         return GR_SENDMSG_FAILED;
 
@@ -172,7 +176,7 @@ int gr_poll(int fd)
         struct pollfd pfd;
         pfd.fd = fd;
         pfd.events = POLLIN | POLLMSG;
-        int r = poll(&pfd, 1lu, 0);
+        const int r = poll(&pfd, 1lu, 0);
         if (r < 0)
             return GR_POLL_FAILED;
         else
