@@ -109,7 +109,7 @@ int gr_recv(int gr, void * fd_identifier, size_t fd_identifier_len)
 
     struct cmsghdr * cr = CMSG_FIRSTHDR(&m);
 
-    if (cr->cmsg_type != SCM_RIGHTS)
+    if (cr->cmsg_level != SOL_SOCKET || cr->cmsg_type != SCM_RIGHTS)
         return GR_INVALID_MSG;
 
     int fd = -1;

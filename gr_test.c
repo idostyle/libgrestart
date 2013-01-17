@@ -22,12 +22,26 @@ int main(int argc, char ** argv)
         if (fd >= 0)
         {
             write(fd, "Test\n", 5lu);
-            fsync(fd);
+            close(fd);
         }
         else
         {
             printf("gr_recv errno: %s\n", strerror(errno));
         }
+
+        fd = gr_recv(r, &x, 1lu);
+        printf("gr_recv: %d %c\n", fd, x);
+        if (fd >= 0)
+        {
+            write(fd, "Test\n", 5lu);
+            close(fd);
+        }
+        else
+        {
+            printf("gr_recv errno: %s\n", strerror(errno));
+        }
+
+        close(r);
     }
     else
         printf("gr_init errno: %s\n", strerror(errno));
@@ -50,11 +64,24 @@ int main(int argc, char ** argv)
             {
                 printf("gr_send errno: %s\n", strerror(errno));
             }
+
+            s = gr_send(client, 2, "x", 1lu);
+            printf("gr_send: %d\n", s);
+            if (s >= 0)
+            {
+                // party <|:)-/-<
+            }
+            else
+            {
+                printf("gr_send errno: %s\n", strerror(errno));
+            }
         }
         else
         {
             printf("accept errno: %s\n", strerror(errno));
         }
+
+        close(r);
     }
     else
     {
