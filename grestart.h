@@ -48,7 +48,7 @@ int gr_send(int gr, int fd, void * fd_identifier, const size_t fd_identifier_len
  *
  */
 #ifdef GR_WANT_POLL
-int gr_poll(int fd);
+int gr_poll(int fd, int timeout);
 #endif
 
 

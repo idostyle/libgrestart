@@ -16,11 +16,12 @@
         return GR_IDENTIFIER_TOO_LONG;
 
 #define GR_CREATE_SOCKET(var_s) \
-    const int var_s = socket(PF_UNIX, /*SOCK_STREAM*/ SOCK_SEQPACKET | SOCK_CLOEXEC, 0); \
+    const int var_s = socket(PF_UNIX, /*SOCK_STREAM*/ SOCK_SEQPACKET /*| SOCK_CLOEXEC*/, 0); \
     if (var_s < 0) \
         return GR_SOCKET_CREATION_FAILED;
 
-#define GR_SETUP_ADDRESS(address, identifier, identifier_len) do { \
+#define GR_SETUP_ADDRESS(address, identifier, identifier_len) \
+    do { \
         memset(&address, 0, sizeof(struct sockaddr_un)); \
         address.sun_family = AF_UNIX; \
         memcpy(&(address.sun_path), identifier, identifier_len); \
@@ -175,7 +176,7 @@ int gr_poll(int fd, int timeout)
     {
         struct pollfd pfd;
         pfd.fd = fd;
-        pfd.events = POLLIN | POLLMSG;
+        pfd.events = POLLIN /* new clients ? */ | POLLMSG /* new messages ? */;
         const int r = poll(&pfd, 1lu, timeout);
         if (r < 0)
             return GR_POLL_FAILED;
