@@ -40,6 +40,15 @@ int gr_send_iov(const int gr, const int fd, struct iovec * iov);
 
 #define GR_SUN_LEN(idlen) ((socklen_t) (((size_t)((struct sockaddr_un *) 0)->sun_path) + idlen))
 
+#define GR_SETUP_MESSAGE_HEADER(m, c) \
+    struct msghdr m; \
+    memset(&m, 0, sizeof(struct msghdr)); \
+    char ctrl_buf[CMSG_SPACE(sizeof(int))]; \
+    memset(ctrl_buf, 0, sizeof(ctrl_buf)); \
+    struct cmsghdr * c = (struct cmsghdr *) ctrl_buf; \
+    m.msg_control = c; \
+    m.msg_controllen = CMSG_SPACE(sizeof(int));
+
 
 int gr_init(const char * identifier, const size_t identifier_len)
 {
@@ -132,15 +141,7 @@ int gr_recv_iov(const int gr, struct iovec * iov)
     if (gr < 0)
         return GR_NOT_A_GR_CLIENT;
 
-    struct msghdr m;
-    memset(&m, 0, sizeof(struct msghdr));
-
-    char ctrl_buf[CMSG_SPACE(sizeof(int))];
-    memset(ctrl_buf, 0, sizeof(ctrl_buf));
-
-    struct cmsghdr * c = (struct cmsghdr *) ctrl_buf;
-    m.msg_control = c;
-    m.msg_controllen = CMSG_SPACE(sizeof(int));
+    GR_SETUP_MESSAGE_HEADER(m, c);
 
     if (iov)
     {
@@ -178,21 +179,12 @@ int gr_send_iov(const int gr, const int fd, struct iovec * iov)
     if (fd < 0)
         return GR_DOESNT_LOOK_LIKE_A_FD;
 
-    struct msghdr m;
-    memset(&m, 0, sizeof(struct msghdr));
+    GR_SETUP_MESSAGE_HEADER(m, c);
 
-    char ctrl_buf[CMSG_SPACE(sizeof(int))];
-    memset(ctrl_buf, 0, sizeof(ctrl_buf));
-
-    struct cmsghdr * c = (struct cmsghdr *) ctrl_buf;
     c->cmsg_level = SOL_SOCKET;
     c->cmsg_type = SCM_RIGHTS;
     c->cmsg_len = CMSG_LEN(sizeof(int));
     *(int*)CMSG_DATA(c) = fd;
-
-    m.msg_control = ctrl_buf;
-    m.msg_controllen = sizeof(ctrl_buf);
-    // m.msg_flags = 0;
 
     if (iov)
     {
