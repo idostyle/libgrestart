@@ -9,6 +9,15 @@
 
 #include "grestart.h"
 
+#ifndef GR_WANT_POLL
+int gr_poll(const int fd, const int timeout);
+#endif
+
+#ifndef GR_WANT_IOV_IF
+int gr_recv_iov(const int gr, struct iovec * iov);
+int gr_send_iov(const int gr, const int fd, struct iovec * iov);
+#endif
+
 #define GR_ARG_CHECK() \
     if (!identifier) \
         return GR_NO_IDENTIFIER; \
@@ -73,10 +82,55 @@ int gr_setup(const char * identifier, const size_t identifier_len)
     return s;
 }
 
-int gr_recv(const int gr, void * fd_identifier, size_t * fd_identifier_len)
+int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len)
+{
+    struct iovec iov;
+    memset(&iov, '\0', sizeof(struct iovec));
+
+    if (fd_identifier_len > 0lu)
+    {
+        iov.iov_len = fd_identifier_len;
+        iov.iov_base = fd_identifier;
+    }
+
+    return gr_recv_iov(gr, &iov);
+}
+
+int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_identifier_len)
+{
+    struct iovec iov;
+    memset(&iov, '\0', sizeof(struct iovec));
+
+    if (fd_identifier_len > 0lu)
+    {
+        iov.iov_len = fd_identifier_len;
+        iov.iov_base = fd_identifier;
+    }
+
+    return gr_send_iov(gr, fd, &iov);
+}
+
+int gr_poll(const int fd, const int timeout)
+{
+    if (fd >= 0)
+    {
+        struct pollfd pfd;
+        pfd.fd = fd;
+        pfd.events = POLLIN /* new clients ? */ | POLLMSG /* new messages ? */;
+        const int r = poll(&pfd, 1lu, timeout);
+        if (r < 0)
+            return GR_POLL_FAILED;
+        else
+            return pfd.revents;
+    }
+    else
+        return GR_DOESNT_LOOK_LIKE_A_FD;
+}
+
+int gr_recv_iov(const int gr, struct iovec * iov)
 {
     if (gr < 0)
-        return GR_NOT_A_GR_INSTANCE;
+        return GR_NOT_A_GR_CLIENT;
 
     struct msghdr m;
     memset(&m, 0, sizeof(struct msghdr));
@@ -88,14 +142,8 @@ int gr_recv(const int gr, void * fd_identifier, size_t * fd_identifier_len)
     m.msg_control = c;
     m.msg_controllen = CMSG_SPACE(sizeof(int));
 
-    struct iovec iov[1];
-    memset(iov, 0, sizeof(struct iovec));
-
-    if (fd_identifier)
+    if (iov)
     {
-        iov[0].iov_len = *fd_identifier_len;
-        iov[0].iov_base = fd_identifier;
-
         m.msg_iov = iov;
         m.msg_iovlen = 1;
     }
@@ -119,15 +167,13 @@ int gr_recv(const int gr, void * fd_identifier, size_t * fd_identifier_len)
     if (fd < 0)
         return GR_DOESNT_LOOK_LIKE_A_FD;
 
-    *fd_identifier_len = m.msg_iov[0].iov_len;
-
     return fd;
 }
 
-int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_identifier_len)
+int gr_send_iov(const int gr, const int fd, struct iovec * iov)
 {
     if (gr < 0)
-        return GR_NOT_A_GR_INSTANCE;
+        return GR_NOT_A_GR_CLIENT;
 
     if (fd < 0)
         return GR_DOESNT_LOOK_LIKE_A_FD;
@@ -148,43 +194,15 @@ int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_id
     m.msg_controllen = sizeof(ctrl_buf);
     // m.msg_flags = 0;
 
-    struct iovec iov[1];
-    memset(iov, 0, sizeof(struct iovec));
-
-    if (fd_identifier_len > 0lu)
+    if (iov)
     {
-        iov[0].iov_len = fd_identifier_len;
-        iov[0].iov_base = fd_identifier;
+        m.msg_iov = iov;
+        m.msg_iovlen = 1;
     }
-
-    m.msg_iov = iov;
-    m.msg_iovlen = 1;
 
     const ssize_t r = sendmsg(gr, &m, 0);
     if (r < 0)
         return GR_SENDMSG_FAILED;
 
     return (int) r;
-}
-
-
-#ifndef GR_WANT_POLL
-int gr_poll(const int fd, const int timeout);
-#endif
-
-int gr_poll(const int fd, const int timeout)
-{
-    if (fd >= 0)
-    {
-        struct pollfd pfd;
-        pfd.fd = fd;
-        pfd.events = POLLIN /* new clients ? */ | POLLMSG /* new messages ? */;
-        const int r = poll(&pfd, 1lu, timeout);
-        if (r < 0)
-            return GR_POLL_FAILED;
-        else
-            return pfd.revents;
-    }
-    else
-        return GR_NOT_A_GR_INSTANCE;
 }

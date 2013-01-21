@@ -17,9 +17,8 @@ int main(int argc, char ** argv)
     if (r >= 0)
     {
         int x = 42;
-        size_t x_len = sizeof(int);
-        int fd = gr_recv(r, &x, &x_len);
-        printf("gr_recv: %d %lu %d\n", fd, x_len, x);
+        int fd = gr_recv(r, &x, sizeof(int));
+        printf("gr_recv: %d %d\n", fd, x);
         if (fd >= 0)
         {
             write(fd, "Test\n", 5lu);
@@ -31,9 +30,8 @@ int main(int argc, char ** argv)
         }
 
         char xi[16];
-        size_t xi_len = 16lu;
-        fd = gr_recv(r, xi, &xi_len);
-        printf("gr_recv: %d %lu %s\n", fd, xi_len, xi);
+        fd = gr_recv(r, xi, 16lu);
+        printf("gr_recv: %d %s\n", fd, xi);
         if (fd >= 0)
         {
             write(fd, "Test\n", 5lu);

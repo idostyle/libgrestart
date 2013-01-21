@@ -16,7 +16,7 @@ typedef enum error_codes_
     GR_SETSOCKOPT_FAILED = -5,
     GR_BIND_FAILED = -6,
     GR_LISTEN_FAILED = -7,
-    GR_NOT_A_GR_INSTANCE = -8,
+    GR_NOT_A_GR_CLIENT = -8,
     GR_RECVMSG_FAILED = -9,
     GR_SENDMSG_FAILED = -10,
     GR_INVALID_MSG_RECVD = -11,
@@ -62,11 +62,11 @@ int gr_setup(const char * identifier, const size_t identifier_len);
  *     is send over unmodified; may or may not be null-terminated;
  *
  * - fd_identifier_len: size of memory area passed to fd_identifier;
- *     can be 0 if fd_identifier is a 0-pointer; returns bytes recieved
+ *     can be 0 if fd_identifier is a 0-pointer;
  *
  * Returns an fd >= 0 or an error code < 0
  */
-int gr_recv(const int gr, void * fd_identifier, size_t * fd_identifier_len);
+int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len);
 
 /**
  * Send a fd to the new instance.
@@ -98,6 +98,14 @@ int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_id
 int gr_poll(const int fd, const int timeout);
 #endif
 
+/**
+ *
+ */
+#ifdef GR_WANT_IOV_IF
+int gr_recv_iov(const int gr, struct iovec * iov);
+int gr_send_iov(const int gr, const int fd, struct iovec * iov);
+#endif
+
 
 #ifndef SOCK_NONBLOCK
 enum  __socket_type_nb
@@ -116,7 +124,7 @@ enum  __socket_type_ce
 #endif
 
 #ifndef POLLMSG
-#define POLLMSG	0x400
+#define POLLMSG 0x400
 #endif
 
 #endif
