@@ -107,22 +107,6 @@ int gr_send_iov(const int gr, const int fd, struct iovec * iov);
 #endif
 
 
-#ifndef SOCK_NONBLOCK
-enum  __socket_type_nb
-{
-    SOCK_NONBLOCK = 00004000,
-};
-#define SOCK_NONBLOCK SOCK_NONBLOCK
-#endif
-
-#ifndef SOCK_CLOEXEC
-enum  __socket_type_ce
-{
-    SOCK_CLOEXEC = 02000000,
-};
-#define SOCK_CLOEXEC SOCK_CLOEXEC
-#endif
-
 #ifndef POLLIN
 #define POLLIN 0x001
 #endif

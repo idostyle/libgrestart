@@ -25,7 +25,7 @@ int gr_send_iov(const int gr, const int fd, struct iovec * iov);
         return GR_IDENTIFIER_TOO_LONG;
 
 #define GR_CREATE_SOCKET(var_s) \
-    const int var_s = socket(PF_UNIX, /*SOCK_STREAM*/ SOCK_SEQPACKET /*| SOCK_CLOEXEC*/, 0); \
+    const int var_s = socket(PF_UNIX, /*SOCK_STREAM*/ SOCK_SEQPACKET, 0); \
     if (var_s < 0) \
         return GR_SOCKET_CREATION_FAILED;
 
