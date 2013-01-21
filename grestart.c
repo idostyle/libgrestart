@@ -73,7 +73,7 @@ int gr_setup(const char * identifier, const size_t identifier_len)
     return s;
 }
 
-int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len)
+int gr_recv(const int gr, void * fd_identifier, size_t * fd_identifier_len)
 {
     if (gr < 0)
         return GR_NOT_A_GR_INSTANCE;
@@ -93,7 +93,7 @@ int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len)
 
     if (fd_identifier)
     {
-        iov[0].iov_len = fd_identifier_len;
+        iov[0].iov_len = *fd_identifier_len;
         iov[0].iov_base = fd_identifier;
 
         m.msg_iov = iov;
@@ -118,6 +118,8 @@ int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len)
     const int fd = *CMSG_DATA(cr);
     if (fd < 0)
         return GR_DOESNT_LOOK_LIKE_A_FD;
+
+    *fd_identifier_len = m.msg_iov[0].iov_len;
 
     return fd;
 }

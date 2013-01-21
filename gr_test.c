@@ -16,9 +16,10 @@ int main(int argc, char ** argv)
     printf("gr_init: %d\n", r);
     if (r >= 0)
     {
-        char x = '\0';
-        int fd = gr_recv(r, &x, 1lu);
-        printf("gr_recv: %d %c\n", fd, x);
+        int x = 42;
+        size_t x_len = sizeof(int);
+        int fd = gr_recv(r, &x, &x_len);
+        printf("gr_recv: %d %lu %d\n", fd, x_len, x);
         if (fd >= 0)
         {
             write(fd, "Test\n", 5lu);
@@ -29,8 +30,10 @@ int main(int argc, char ** argv)
             printf("gr_recv errno: %s\n", strerror(errno));
         }
 
-        fd = gr_recv(r, &x, 1lu);
-        printf("gr_recv: %d %c\n", fd, x);
+        char xi[16];
+        size_t xi_len = 16lu;
+        fd = gr_recv(r, xi, &xi_len);
+        printf("gr_recv: %d %lu %s\n", fd, xi_len, xi);
         if (fd >= 0)
         {
             write(fd, "Test\n", 5lu);
@@ -54,7 +57,8 @@ int main(int argc, char ** argv)
         printf("accept: %d\n", client);
         if (client >= 0)
         {
-            int s = gr_send(client, 1, "x", 1lu);
+            int xi = 42;
+            int s = gr_send(client, 1, &xi, sizeof(int));
             printf("gr_send: %d\n", s);
             if (s >= 0)
             {
@@ -65,7 +69,7 @@ int main(int argc, char ** argv)
                 printf("gr_send errno: %s\n", strerror(errno));
             }
 
-            s = gr_send(client, 2, "x", 1lu);
+            s = gr_send(client, 2, "MainSocket", 11lu);
             printf("gr_send: %d\n", s);
             if (s >= 0)
             {

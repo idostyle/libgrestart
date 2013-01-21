@@ -54,27 +54,45 @@ int gr_setup(const char * identifier, const size_t identifier_len);
 /**
  * Recieve an fd from a running instance.
  *
- * - gr: is expected to be an accepted client socket
+ * - gr: is expected to be an accepted client socket;
+ *     not the gr-socket from gr_init/gr_setup;
  *
- * - fd_identifier: is expected to be allocated memory area or 0
+ * - fd_identifier: is expected to be an allocated memory area of fd_identifier_len
+ *     size or a 0-pointer; can be used to identify the fd send over;
+ *     is send over unmodified; may or may not be null-terminated;
  *
- * - fd_identifier_len:
+ * - fd_identifier_len: size of memory area passed to fd_identifier;
+ *     can be 0 if fd_identifier is a 0-pointer; returns bytes recieved
  *
  * Returns an fd >= 0 or an error code < 0
  */
-int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len);
+int gr_recv(const int gr, void * fd_identifier, size_t * fd_identifier_len);
 
 /**
- * Send an fd to the new instance.
+ * Send a fd to the new instance.
+ *
+ * - gr: is expected to be an accepted client socket
+ *
+ * - fd: file descriptor to be send over
+ *
+ * - fd_identifier: is expected to be an allocated memory area of fd_identifier_len
+ *     size or a 0-pointer; can be used to identify the fd send over;
+ *
+ * - fd_identifier_len: size of memory area passed to fd_identifier;
+ *     can be 0 if fd_identifier is a 0-pointer;
  *
  * Returns count of byte sent >= 0 or an error code < 0
  */
 int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_identifier_len);
 
 /**
- * Poll if the fd is readable or message is to be recieved.
+ * Poll if the fd is readable or a message is to be recieved.
  *
- * Returns poll events > 0 or an error code < 0
+ * - fd: file descriptor to check
+ *
+ * - timeout: poll timeout in milisecs
+ *
+ * Returns poll events >= 0 or an error code < 0
  */
 #ifdef GR_WANT_POLL
 int gr_poll(const int fd, const int timeout);
