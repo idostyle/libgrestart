@@ -1,3 +1,4 @@
+#define GR_WANT_POLL
 #include "grestart.h"
 
 #include <stdio.h>
@@ -16,6 +17,8 @@ int main(int argc, char ** argv)
     printf("gr_init: %d\n", r);
     if (r >= 0)
     {
+        int p = gr_poll(r, 1000);
+        printf("gr_poll: %d\n", p);
         int x = 42;
         int fd = gr_recv(r, &x, sizeof(int));
         printf("gr_recv: %d %d\n", fd, x);

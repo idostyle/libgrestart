@@ -125,7 +125,7 @@ int gr_poll(const int fd, const int timeout)
     {
         struct pollfd pfd;
         pfd.fd = fd;
-        pfd.events = POLLIN /* new clients ? */ | POLLMSG /* new messages ? */;
+        pfd.events = POLLIN /* new clients ? */;
         const int r = poll(&pfd, 1lu, timeout);
         if (r < 0)
             return GR_POLL_FAILED;

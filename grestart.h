@@ -123,8 +123,8 @@ enum  __socket_type_ce
 #define SOCK_CLOEXEC SOCK_CLOEXEC
 #endif
 
-#ifndef POLLMSG
-#define POLLMSG 0x400
+#ifndef POLLIN
+#define POLLIN 0x001
 #endif
 
 #endif
