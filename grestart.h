@@ -71,10 +71,10 @@ int gr_init(const char * identifier, const size_t identifier_len);
 int gr_setup(const char * identifier, const size_t identifier_len);
 
 /**
- * Recieve an fd from a running instance.
+ * Recieve a fd from a running instance.
  *
  * - gr: is expected to be an accepted client socket;
- *     not the gr-socket from gr_init/gr_setup;
+ *     not the main socket from gr_init/gr_setup;
  *
  * - fd_identifier: is expected to be an allocated memory area of fd_identifier_len
  *     size or a 0-pointer; can be used to identify the fd send over;
@@ -105,11 +105,12 @@ int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len);
 int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_identifier_len);
 
 /**
- * Poll if the fd is readable or a message is to be recieved.
+ * Poll if the fd is readable.
+ * It may be advisable to use you own implementation.
  *
  * - fd: file descriptor to check
  *
- * - timeout: poll timeout in milisecs
+ * - timeout: timeout in milisecs (passed over to poll)
  *
  * Returns poll events >= 0 or an error code < 0
  */
@@ -118,16 +119,11 @@ int gr_poll(const int fd, const int timeout);
 #endif
 
 /**
- *
+ * Raw interface to gr_recv/gr_send.
  */
 #ifdef GR_WANT_IOV
 int gr_recv_iov(const int gr, struct iovec * iov);
 int gr_send_iov(const int gr, const int fd, struct iovec * iov);
-#endif
-
-
-#ifndef POLLIN
-#define POLLIN 0x001
 #endif
 
 #endif
