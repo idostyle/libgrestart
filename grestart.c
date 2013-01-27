@@ -138,6 +138,39 @@ int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_id
     return gr_send_iov(gr, fd, &iov);
 }
 
+int gr_close(const int gr)
+{
+    if (gr < 0)
+        return GR_NOT_A_GR_CLIENT;
+
+    struct sockaddr_un address;
+    memset(&address, 0, sizeof(struct sockaddr_un));
+    socklen_t add_len = sizeof(struct sockaddr_un);
+
+    const int rs = getsockname(gr, (struct sockaddr *) &address, &add_len);
+    if (rs < 0)
+    {
+        return GR_GETSOCKNAME_FAILED;
+    }
+
+    if (address.sun_path[0] != '\0')
+    {
+        const int ru = unlink(address.sun_path);
+        if (ru < 0)
+        {
+            return GR_UNLINK_FAILED;
+        }
+    }
+
+    const int rc = close(gr);
+    if (rc < 0)
+    {
+        return GR_CLOSE_FAILED;
+    }
+
+    return 0;
+}
+
 int gr_poll(const int fd, const int timeout)
 {
     if (fd >= 0)

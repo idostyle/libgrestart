@@ -40,7 +40,10 @@ typedef enum error_codes_
     GR_SENDMSG_FAILED = -10,
     GR_INVALID_MSG_RECVD = -11,
     GR_DOESNT_LOOK_LIKE_A_FD = -12,
-    GR_POLL_FAILED = -13,
+    GR_GETSOCKNAME_FAILED = -13,
+    GR_UNLINK_FAILED = -14,
+    GR_CLOSE_FAILED = -15,
+    GR_POLL_FAILED = -16,
 } error_codes_t;
 
 /**
@@ -103,6 +106,12 @@ int gr_recv(const int gr, void * fd_identifier, const size_t fd_identifier_len);
  * Returns count of byte sent >= 0 or an error code < 0
  */
 int gr_send(const int gr, const int fd, void * fd_identifier, const size_t fd_identifier_len);
+
+
+/**
+ *
+ */
+int gr_close(const int gr);
 
 /**
  * Poll if the fd is readable.
