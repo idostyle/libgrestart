@@ -13,7 +13,7 @@
 int gr_poll(const int fd, const int timeout);
 #endif
 
-#ifndef GR_WANT_IOV_IF
+#ifndef GR_WANT_IOV
 int gr_recv_iov(const int gr, struct iovec * iov);
 int gr_send_iov(const int gr, const int fd, struct iovec * iov);
 #endif
